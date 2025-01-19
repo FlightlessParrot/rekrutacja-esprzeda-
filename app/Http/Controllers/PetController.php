@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePetRequest;
 use App\Models\Category;
 use App\Models\Tag;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,13 +13,14 @@ use Inertia\Inertia;
 use App\Enums\Status;
 use App\Http\Requests\PhotoUploadRequest;
 use App\Http\Requests\UpdatePetRequest;
+use Inertia\Response as InertiaResponse;
 
 class PetController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Status $status)
+    public function index(Status $status) : InertiaResponse|RedirectResponse
     {
         $response = Http::get('https://petstore.swagger.io/v2/pet/findByStatus', ['status'=>$status->value]);
         if($response->status() !== 200){
@@ -40,10 +40,11 @@ class PetController extends Controller
         });
         return Inertia::render('Pet/IndexPets', ['pets' => $pets]);
     }
+
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create() : InertiaResponse
     {
         return Inertia::render('Pet/AddPet', [
             'categories' => Category::all(),
@@ -98,7 +99,7 @@ class PetController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id) : InertiaResponse|RedirectResponse
     {
         $response = Http::get('https://petstore.swagger.io/v2/pet/'.$id);
        
@@ -118,7 +119,7 @@ class PetController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePetRequest $request, string $id)
+    public function update(UpdatePetRequest $request, string $id) : RedirectResponse
     {
         $response = Http::get('https://petstore.swagger.io/v2/pet/'.$id);
         if($response->status() !== 200){
@@ -152,7 +153,7 @@ class PetController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id) : RedirectResponse
     {
         $response = Http::delete('https://petstore.swagger.io/v2/pet/'.$id);
         if($response->status() === 200){
@@ -162,7 +163,7 @@ class PetController extends Controller
         }
     }
 
-    public function fileUpload(PhotoUploadRequest $request,string $id)
+    public function fileUpload(PhotoUploadRequest $request,string $id) : RedirectResponse
     {
      
         $response = Http::asMultipart()->post('https://petstore.swagger.io/v2/pet/'.$id.'/uploadImage', [
